@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Global tables ───────────────────────────────────────────────────────────
+
+model Tenant {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  displayName String   @map("display_name")
+  schemaName  String   @unique @map("schema_name")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  llmSettings       LlmSettings?
+  changeRequests    AgentChangeRequest[]
+  releases          AgentRelease[]
+  rollbacks         AgentRollback[]
+
+  @@map("tenants")
+}
+
+model LlmSettings {
+  id         String   @id @default(uuid())
+  tenantId   String   @unique @map("tenant_id")
+  provider   String   @default("mock")
+  model      String   @default("gpt-4o")
+  apiKeyHash String?  @map("api_key_hash")
+  apiKeyEnc  String?  @map("api_key_enc")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("llm_settings")
+}
+
+model AgentChangeRequest {
+  id          String   @id @default(uuid())
+  tenantId    String   @map("tenant_id")
+  prompt      String
+  status      String   @default("pending")
+  errorMsg    String?  @map("error_msg")
+  createdAt   DateTime @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  tenant  Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  patches AgentChangePatch[]
+
+  @@map("agent_change_requests")
+}
+
+model AgentChangePatch {
+  id              String   @id @default(uuid())
+  changeRequestId String   @map("change_request_id")
+  filePath        String   @map("file_path")
+  patchContent    String   @map("patch_content")
+  appliedAt       DateTime? @map("applied_at")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  changeRequest AgentChangeRequest @relation(fields: [changeRequestId], references: [id], onDelete: Cascade)
+
+  @@map("agent_change_patches")
+}
+
+model AgentRelease {
+  id          String   @id @default(uuid())
+  tenantId    String   @map("tenant_id")
+  version     Int
+  description String?
+  snapshot    Json
+  isActive    Boolean  @default(false) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rollbacks AgentRollback[]
+
+  @@unique([tenantId, version])
+  @@map("agent_releases")
+}
+
+model AgentRollback {
+  id          String   @id @default(uuid())
+  tenantId    String   @map("tenant_id")
+  releaseId   String   @map("release_id")
+  rolledBackAt DateTime @default(now()) @map("rolled_back_at")
+  reason      String?
+
+  tenant  Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  release AgentRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+
+  @@map("agent_rollbacks")
+}
