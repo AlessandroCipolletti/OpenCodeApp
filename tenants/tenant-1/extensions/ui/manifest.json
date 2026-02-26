@@ -1,0 +1,17 @@
+{
+  "id": "ui",
+  "name": "UI Extension",
+  "version": "0.1.0",
+  "description": "Default UI extension for tenant-1. Modify this page via the AI assistant.",
+  "capabilities": [
+    { "type": "ui.page" }
+  ],
+  "routes": [
+    {
+      "slug": "custom-items",
+      "title": "Custom Items",
+      "description": "A custom page managed by the AI agent"
+    }
+  ],
+  "entry": "index.tsx"
+}

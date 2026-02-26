@@ -27,8 +27,8 @@ Thumbs.db
 .idea/
 
 # Prisma
-packages/opencodeapp-db/prisma/migrations/
-!packages/opencodeapp-db/prisma/migrations/.gitkeep
+!packages/opencodeapp-db/prisma/migrations/
+!packages/opencodeapp-db/prisma/migrations/**
 
 # Extension bundles (built artifacts)
 tenants/*/extensions/*/dist/
