@@ -110,3 +110,6 @@ ALTER TABLE "agent_releases" ADD CONSTRAINT "agent_releases_tenant_id_fkey" FORE
 
 -- AddForeignKey
 ALTER TABLE "agent_rollbacks" ADD CONSTRAINT "agent_rollbacks_tenant_id_fkey" FOREIGN KEY ("tenant_id") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "agent_rollbacks" ADD CONSTRAINT "agent_rollbacks_release_id_fkey" FOREIGN KEY ("release_id") REFERENCES "agent_releases"("id") ON DELETE CASCADE ON UPDATE CASCADE;
