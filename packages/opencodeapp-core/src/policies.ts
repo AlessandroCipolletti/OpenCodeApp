@@ -51,8 +51,8 @@ export function isSafeMigrationSql(sql: string): { safe: boolean; reason?: strin
 
   // Disallow modifications to core tables
   const dangerousPatterns = [
-    /ALTER\s+TABLE\s+(?!ext_)/i,
-    /TRUNCATE\s+(?!ext_)/i,
+    /ALTER\s+TABLE\s+(?!ext_\w)\w/i,
+    /TRUNCATE\s+(?!ext_\w)\w/i,
     /DROP\s+SCHEMA/i,
     /CREATE\s+SCHEMA/i,
   ];
