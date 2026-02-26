@@ -1,13 +1,14 @@
 import Link from 'next/link';
 
 interface ExtPageProps {
-  params: { slug: string[] };
-  searchParams: { tenant?: string };
+  params: Promise<{ slug: string[] }>;
+  searchParams: Promise<{ tenant?: string }>;
 }
 
-export default function ExtPage({ params, searchParams }: ExtPageProps) {
-  const tenant = searchParams.tenant ?? 'tenant-1';
-  const slug = params.slug.join('/');
+export default async function ExtPage({ params, searchParams }: ExtPageProps) {
+  const { slug: slugArr } = await params;
+  const { tenant = 'tenant-1' } = await searchParams;
+  const slug = slugArr.join('/');
 
   return (
     <main>
