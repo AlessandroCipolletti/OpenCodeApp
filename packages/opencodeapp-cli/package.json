@@ -1,0 +1,22 @@
+{
+  "name": "@opencodeapp/cli",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "opencodeapp": "bin/opencodeapp"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@opencodeapp/agent": "*",
+    "@opencodeapp/db": "*",
+    "@opencodeapp/llm": "*",
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.2"
+  }
+}

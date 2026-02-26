@@ -1,0 +1,17 @@
+{
+  "name": "@opencodeapp/agent",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@opencodeapp/llm": "*",
+    "@opencodeapp/db": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.2"
+  }
+}

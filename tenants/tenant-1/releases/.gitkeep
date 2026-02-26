@@ -1,0 +1,5 @@
+# Releases
+
+This directory stores point-in-time snapshots of the extension sandbox, created by the agent when a release is tagged. Each subdirectory is named after the release ID from the `agent_releases` table.
+
+Snapshots are managed automatically by `RollbackManager` — do not edit these files manually.

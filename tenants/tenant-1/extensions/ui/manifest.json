@@ -1,0 +1,12 @@
+{
+  "name": "ui-extension",
+  "version": "1.0.0",
+  "description": "Example UI extension for tenant-1",
+  "capabilities": ["ui", "data:read", "audit"],
+  "pages": [
+    {
+      "name": "hello",
+      "file": "pages/hello.tsx"
+    }
+  ]
+}

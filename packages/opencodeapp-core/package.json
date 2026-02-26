@@ -1,0 +1,17 @@
+{
+  "name": "@opencodeapp/core",
+  "version": "1.0.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@opencodeapp/sdk": "*",
+    "@opencodeapp/ext": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.2"
+  }
+}

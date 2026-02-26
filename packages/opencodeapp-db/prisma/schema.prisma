@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Global Tables ──────────────────────────────────────────────────────────
+
+model Tenant {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  llmSettings          LlmSetting[]
+  agentChangeRequests  AgentChangeRequest[]
+  agentReleases        AgentRelease[]
+  agentRollbacks       AgentRollback[]
+
+  @@map("tenants")
+}
+
+model LlmSetting {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  provider  String   @default("openai")
+  apiKey    String   @map("api_key")
+  model     String   @default("gpt-4o")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("llm_settings")
+}
+
+model AgentChangeRequest {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  prompt    String
+  status    String   @default("pending") // pending | running | done | failed
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tenant  Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  patches AgentChangePatch[]
+
+  @@map("agent_change_requests")
+}
+
+model AgentChangePatch {
+  id        String   @id @default(cuid())
+  requestId String   @map("request_id")
+  filePath  String   @map("file_path")
+  patchDiff String   @map("patch_diff")
+  appliedAt DateTime @default(now()) @map("applied_at")
+
+  request AgentChangeRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@map("agent_change_patches")
+}
+
+model AgentRelease {
+  id         String   @id @default(cuid())
+  tenantId   String   @map("tenant_id")
+  version    String
+  releasedAt DateTime @default(now()) @map("released_at")
+  notes      String?
+
+  tenant    Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rollbacks AgentRollback[]
+
+  @@map("agent_releases")
+}
+
+model AgentRollback {
+  id           String   @id @default(cuid())
+  tenantId     String   @map("tenant_id")
+  releaseId    String   @map("release_id")
+  rolledBackAt DateTime @default(now()) @map("rolled_back_at")
+
+  tenant  Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  release AgentRelease @relation(fields: [releaseId], references: [id], onDelete: Cascade)
+
+  @@map("agent_rollbacks")
+}
+
+// ─── Tenant-scoped Core Data ─────────────────────────────────────────────────
+// Items live in the public schema but are scoped per tenant via tenantId.
+
+model Item {
+  id          String   @id @default(cuid())
+  tenantId    String   @map("tenant_id")
+  name        String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("items")
+}
