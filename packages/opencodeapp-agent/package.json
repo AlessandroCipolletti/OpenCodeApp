@@ -1,0 +1,21 @@
+{
+  "name": "@opencodeapp/agent",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@opencodeapp/core": "*",
+    "@opencodeapp/db": "*",
+    "@opencodeapp/llm": "*",
+    "diff": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/diff": "^5.2.1",
+    "typescript": "^5.3.3"
+  }
+}
