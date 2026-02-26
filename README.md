@@ -28,7 +28,7 @@ A multi-tenant, AI-powered coding agent platform. Each tenant gets isolated exte
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 14 (App Router), Tailwind CSS |
+| Frontend | Next.js 15 (App Router), Tailwind CSS |
 | Backend | NestJS 10, Swagger/OpenAPI |
 | Database | PostgreSQL 15 + Prisma ORM |
 | LLM | OpenAI (gpt-4o by default); BYO key per tenant |

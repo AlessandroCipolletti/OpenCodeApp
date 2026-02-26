@@ -3,11 +3,12 @@ import ItemList from "./ItemList";
 import TenantSwitcher from "./TenantSwitcher";
 
 interface HomeProps {
-  searchParams: { tenant?: string };
+  searchParams: Promise<{ tenant?: string }>;
 }
 
-export default function Home({ searchParams }: HomeProps) {
-  const tenant = searchParams.tenant ?? "tenant-1";
+export default async function Home({ searchParams }: HomeProps) {
+  const { tenant: tenantParam } = await searchParams;
+  const tenant = tenantParam ?? "tenant-1";
 
   return (
     <div>

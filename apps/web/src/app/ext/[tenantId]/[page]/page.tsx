@@ -34,11 +34,11 @@ async function getExtensionPage(
 }
 
 interface PageProps {
-  params: { tenantId: string; page: string };
+  params: Promise<{ tenantId: string; page: string }>;
 }
 
 export default async function ExtensionPage({ params }: PageProps) {
-  const { tenantId, page } = params;
+  const { tenantId, page } = await params;
   const { content, extensionName } = await getExtensionPage(tenantId, page);
 
   if (!content) {
