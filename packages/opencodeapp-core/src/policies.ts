@@ -1,5 +1,3 @@
-import path from 'path';
-
 const ALLOWED_EXTENSION_PREFIX_RE = /^tenants\/[^/]+\/extensions\//;
 const BLOCKED_PATTERNS = [
   /^packages\//,

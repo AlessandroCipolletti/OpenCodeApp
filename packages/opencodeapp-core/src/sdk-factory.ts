@@ -3,6 +3,22 @@ import { prisma } from '@opencodeapp/db';
 
 const ALLOWED_HTTP_DOMAINS: string[] = (process.env.ALLOWED_HTTP_DOMAINS ?? '').split(',').filter(Boolean);
 
+/** Only lowercase letters, digits, and underscores; must start with ext_ */
+const SAFE_IDENTIFIER_RE = /^[a-z][a-z0-9_]*$/;
+
+function assertSafeIdentifier(value: string, label: string): void {
+  if (!SAFE_IDENTIFIER_RE.test(value)) {
+    throw new Error(`sdk: unsafe SQL identifier for ${label}: "${value}"`);
+  }
+}
+
+function assertExtTable(tableName: string): void {
+  assertSafeIdentifier(tableName, 'table');
+  if (!tableName.startsWith('ext_')) {
+    throw new Error(`sdk: table "${tableName}" is not an extension table (must start with ext_)`);
+  }
+}
+
 /**
  * Creates a real SDK instance bound to a specific tenant.
  * This is injected by the framework at runtime; extensions never call this directly.
@@ -13,13 +29,9 @@ export function createRealSdk(tenantId: string): OpenCodeAppSdk {
 
     data: {
       async query(options: SdkDataQueryOptions): Promise<unknown[]> {
-        // Only allow querying tables that start with ext_ for safety
-        const tableName = options.table;
-        if (!tableName.startsWith('ext_')) {
-          throw new Error(`sdk.data.query: table "${tableName}" is not an extension table (must start with ext_)`);
-        }
+        assertExtTable(options.table);
         const result = await prisma.$queryRawUnsafe<unknown[]>(
-          `SELECT * FROM "${tableName}" WHERE "tenant_id" = $1 LIMIT $2 OFFSET $3`,
+          `SELECT * FROM "${options.table}" WHERE "tenant_id" = $1 LIMIT $2 OFFSET $3`,
           tenantId,
           options.limit ?? 100,
           options.offset ?? 0,
@@ -28,17 +40,16 @@ export function createRealSdk(tenantId: string): OpenCodeAppSdk {
       },
 
       async insert(options: SdkDataInsertOptions): Promise<unknown> {
-        const tableName = options.table;
-        if (!tableName.startsWith('ext_')) {
-          throw new Error(`sdk.data.insert: table "${tableName}" is not an extension table (must start with ext_)`);
-        }
+        assertExtTable(options.table);
         const data = { ...options.data, tenant_id: tenantId };
         const keys = Object.keys(data);
+        // Validate every column name before interpolation
+        keys.forEach(k => assertSafeIdentifier(k, 'column'));
         const values = Object.values(data);
         const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
         const cols = keys.map(k => `"${k}"`).join(', ');
         const result = await prisma.$queryRawUnsafe<unknown[]>(
-          `INSERT INTO "${tableName}" (${cols}) VALUES (${placeholders}) RETURNING *`,
+          `INSERT INTO "${options.table}" (${cols}) VALUES (${placeholders}) RETURNING *`,
           ...values,
         );
         return result[0];

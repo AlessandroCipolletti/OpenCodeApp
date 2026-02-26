@@ -14,7 +14,10 @@ function encrypt(text: string): string {
 }
 
 function decrypt(encryptedText: string): string {
-  const [ivHex, dataHex] = encryptedText.split(':');
+  const colonIdx = encryptedText.indexOf(':');
+  if (colonIdx === -1) throw new Error('Invalid encrypted format');
+  const ivHex = encryptedText.slice(0, colonIdx);
+  const dataHex = encryptedText.slice(colonIdx + 1);
   const iv = Buffer.from(ivHex, 'hex');
   const data = Buffer.from(dataHex, 'hex');
   const decipher = createDecipheriv('aes-256-cbc', ENC_KEY, iv);
