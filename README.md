@@ -54,47 +54,38 @@ The AI agent can **only** read and write files under `tenants/<tenantId>/extensi
 
 ## Running Locally
 
-### 1. Clone and install dependencies
+PostgreSQL runs in Docker. The app (API + Next.js) runs on your machine.
+
+### One command (recommended)
 
 ```bash
 git clone https://github.com/AlessandroCipolletti/OpenCodeApp.git
 cd OpenCodeApp
 npm install
+npm run dev:local
 ```
 
-### 2. Configure environment
+`dev:local` will:
+1. Create `.env` from `.env.example` if missing/empty
+2. Start the Postgres container (`docker compose up -d --wait`), creating it if needed
+3. Run migrations and seed (`tenant-1`)
+4. Start API + web
+
+- Frontend: http://localhost:3000 (port from `WEB_PORT` in `.env`)
+- Backend API: http://localhost:3001/api (port from `API_PORT` in `.env`)
+- Postgres: `localhost:5434` (see `.env`)
+
+### Manual steps (optional)
 
 ```bash
-cp .env.example .env
-# Edit .env if you want to change ports or passwords
-```
-
-### 3. Start PostgreSQL
-
-```bash
-docker compose up -d
-```
-
-### 4. Run database migrations
-
-```bash
+cp .env.example .env          # edit ports/passwords if you want
+npm run db:up                 # docker compose up -d --wait
 npm run db:migrate
-```
-
-### 5. Seed the database (creates tenant-1)
-
-```bash
 npm run db:seed
-```
-
-### 6. Start the development servers
-
-```bash
 npm run dev
 ```
 
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:3001/api
+Stop the database container with `npm run db:down`.
 
 ## Pages
 

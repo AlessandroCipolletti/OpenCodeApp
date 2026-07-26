@@ -35,7 +35,7 @@ export class OpenAiLlmProvider implements LlmProvider {
 
   async transcribeAudio(audioBuffer: Buffer, mimeType: string): Promise<string> {
     const formData = new FormData();
-    const blob = new Blob([audioBuffer], { type: mimeType });
+    const blob = new Blob([Uint8Array.from(audioBuffer)], { type: mimeType });
     formData.append('file', blob, 'audio.webm');
     formData.append('model', 'whisper-1');
 

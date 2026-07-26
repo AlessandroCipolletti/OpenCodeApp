@@ -7,7 +7,10 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev --workspace=apps/api\" \"npm run dev --workspace=apps/web\"",
+    "dev": "bash -c 'set -a; [ -f .env ] && . ./.env; set +a; concurrently \"npm run dev --workspace=apps/api\" \"npm run dev --workspace=apps/web\"'",
+    "dev:local": "bash scripts/dev-local.sh",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
     "build": "npm run build --workspaces --if-present",
     "db:migrate": "npm run db:migrate --workspace=packages/opencodeapp-db",
     "db:generate": "npm run db:generate --workspace=packages/opencodeapp-db",
@@ -18,10 +21,22 @@
     "test": "npm run test --workspaces --if-present"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "typescript": "^5.3.3"
+    "concurrently": "^9.2.0",
+    "typescript": "^5.8.3"
+  },
+  "overrides": {
+    "brace-expansion": "5.0.8",
+    "postcss": "8.5.23",
+    "qs": "6.15.3",
+    "sharp": "0.35.3"
   },
   "engines": {
     "node": ">=18"
+  },
+  "allowScripts": {
+    "@prisma/client@5.22.0": true,
+    "@prisma/engines@5.22.0": true,
+    "prisma@5.22.0": true,
+    "esbuild@0.25.12": true
   }
 }
