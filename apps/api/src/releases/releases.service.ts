@@ -1,12 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@opencodeapp/db';
 import { restoreSnapshot } from '@opencodeapp/agent';
-import path from 'path';
+import { resolveTenantsDir } from '../paths';
 
-const REPO_ROOT = path.resolve(process.cwd(), '..', '..');
-const TENANTS_DIR = process.env.TENANTS_DIR
-  ? path.resolve(process.env.TENANTS_DIR)
-  : path.join(REPO_ROOT, 'tenants');
+const TENANTS_DIR = resolveTenantsDir();
 
 @Injectable()
 export class ReleasesService {

@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
-import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { AppNav } from '@/components/AppNav';
 
 interface Release {
   id: string;
@@ -43,13 +43,7 @@ function HistoryPageContent() {
 
   return (
     <main>
-      <nav>
-        <span className="brand">OpenCodeApp</span>
-        <Link href={`/items?tenant=${tenant}`}>Items</Link>
-        <Link href={`/ext/custom-items?tenant=${tenant}`}>Extension</Link>
-        <Link href={`/history?tenant=${tenant}`}>History</Link>
-        <Link href={`/settings?tenant=${tenant}`}>Settings</Link>
-      </nav>
+      <AppNav tenant={tenant} active="history" />
       <div className="container">
         <h2>Release History</h2>
         {loading ? (

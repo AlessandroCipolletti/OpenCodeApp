@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { prisma } from '@opencodeapp/db';
+import { listOpenAiCodingModels, type OpenAiModelInfo } from '@opencodeapp/llm';
 import { createCipheriv, createDecipheriv, randomBytes, createHash } from 'crypto';
 
 const ENC_KEY = createHash('sha256')
@@ -86,5 +87,26 @@ export class SettingsService {
     const settings = await prisma.llmSettings.findUnique({ where: { tenantId } });
     if (!settings?.apiKeyEnc) return null;
     return decrypt(settings.apiKeyEnc);
+  }
+
+  async listCodingModels(
+    tenantId: string,
+    apiKeyFromClient?: string,
+  ): Promise<{ models: OpenAiModelInfo[] }> {
+    const apiKey = apiKeyFromClient?.trim() || (await this.getDecryptedApiKey(tenantId));
+    if (!apiKey) {
+      throw new BadRequestException(
+        'An OpenAI API key is required to load models. Enter a key or save one first.',
+      );
+    }
+
+    try {
+      const models = await listOpenAiCodingModels(apiKey);
+      return { models };
+    } catch (err) {
+      throw new BadRequestException(
+        (err as Error).message || 'Failed to fetch models from OpenAI',
+      );
+    }
   }
 }

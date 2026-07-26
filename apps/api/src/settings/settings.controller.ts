@@ -18,6 +18,16 @@ export class SettingsController {
     return this.settingsService.getLlmSettings(ctx.tenantId);
   }
 
+  @Post('llm/models')
+  async listModels(
+    @Query('tenant') tenantSlug: string,
+    @Body() body: { apiKey?: string },
+  ) {
+    if (!tenantSlug) throw new BadRequestException('tenant query param required');
+    const ctx = await this.tenantService.resolve(tenantSlug);
+    return this.settingsService.listCodingModels(ctx.tenantId, body?.apiKey);
+  }
+
   @Post('llm')
   async upsertLlm(
     @Query('tenant') tenantSlug: string,

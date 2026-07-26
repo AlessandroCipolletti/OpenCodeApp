@@ -1,15 +1,12 @@
+'use client';
+
 import Link from 'next/link';
+import { AppNav } from '@/components/AppNav';
 
 export default function HomePage() {
   return (
     <main>
-      <nav>
-        <span className="brand">OpenCodeApp</span>
-        <Link href="/items?tenant=tenant-1">Items</Link>
-        <Link href="/ext/custom-items?tenant=tenant-1">Extension</Link>
-        <Link href="/history?tenant=tenant-1">History</Link>
-        <Link href="/settings?tenant=tenant-1">Settings</Link>
-      </nav>
+      <AppNav tenant="tenant-1" />
       <div className="container">
         <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
           <h1>Welcome to OpenCodeApp</h1>

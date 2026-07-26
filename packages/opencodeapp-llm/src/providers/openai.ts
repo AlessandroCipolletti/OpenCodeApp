@@ -1,58 +1,66 @@
+import OpenAI from 'openai';
+import { toFile } from 'openai';
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import type { LlmProvider, LlmCompletionOptions, LlmMessage } from '../types';
+import { createOpenAiClient, isReasoningStyleModel } from './openai-client';
+
+function toChatMessages(
+  messages: LlmMessage[],
+  model: string,
+): ChatCompletionMessageParam[] {
+  const useDeveloperRole = isReasoningStyleModel(model);
+
+  return messages.map((message) => {
+    if (message.role === 'system' && useDeveloperRole) {
+      return { role: 'developer', content: message.content };
+    }
+    return { role: message.role, content: message.content };
+  });
+}
 
 export class OpenAiLlmProvider implements LlmProvider {
+  private readonly client: OpenAI;
+
   constructor(
     private readonly apiKey: string,
     private readonly model: string = 'gpt-4o',
-    private readonly baseUrl: string = 'https://api.openai.com/v1',
-  ) {}
+    baseUrl: string = 'https://api.openai.com/v1',
+  ) {
+    this.client = createOpenAiClient(apiKey, baseUrl);
+  }
 
   async complete(options: LlmCompletionOptions): Promise<string> {
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        messages: options.messages,
-        temperature: options.temperature ?? 0.2,
-        max_tokens: options.maxTokens ?? 4096,
-      }),
-    });
+    // max_tokens is deprecated; max_completion_tokens works across chat + reasoning models.
+    const params: OpenAI.Chat.ChatCompletionCreateParamsNonStreaming = {
+      model: this.model,
+      messages: toChatMessages(options.messages, this.model),
+      max_completion_tokens: options.maxTokens ?? 4096,
+    };
 
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`OpenAI API error ${response.status}: ${error}`);
+    if (!isReasoningStyleModel(this.model)) {
+      params.temperature = options.temperature ?? 0.2;
     }
 
-    const data = await response.json() as {
-      choices: { message: { content: string } }[];
-    };
-    return data.choices[0]?.message?.content ?? '';
+    try {
+      const completion = await this.client.chat.completions.create(params);
+      return completion.choices[0]?.message?.content ?? '';
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(`OpenAI API error: ${message}`);
+    }
   }
 
   async transcribeAudio(audioBuffer: Buffer, mimeType: string): Promise<string> {
-    const formData = new FormData();
-    const blob = new Blob([Uint8Array.from(audioBuffer)], { type: mimeType });
-    formData.append('file', blob, 'audio.webm');
-    formData.append('model', 'whisper-1');
-
-    const response = await fetch(`${this.baseUrl}/audio/transcriptions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.apiKey}`,
-      },
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`OpenAI Whisper error ${response.status}: ${error}`);
+    try {
+      const file = await toFile(audioBuffer, 'audio.webm', { type: mimeType });
+      const transcription = await this.client.audio.transcriptions.create({
+        file,
+        model: 'whisper-1',
+      });
+      return transcription.text;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(`OpenAI Whisper error: ${message}`);
     }
-
-    const data = await response.json() as { text: string };
-    return data.text;
   }
 }

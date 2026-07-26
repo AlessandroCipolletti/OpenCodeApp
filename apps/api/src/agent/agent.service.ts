@@ -1,21 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { runAgent, AgentRunResult } from '@opencodeapp/agent';
-import path from 'path';
+import { SettingsService } from '../settings/settings.service';
+import { REPO_ROOT, resolveTenantsDir } from '../paths';
 
-const REPO_ROOT = path.resolve(process.cwd(), '..', '..');
-const TENANTS_DIR = process.env.TENANTS_DIR
-  ? path.resolve(process.env.TENANTS_DIR)
-  : path.join(REPO_ROOT, 'tenants');
+const TENANTS_DIR = resolveTenantsDir();
 
 @Injectable()
 export class AgentService {
+  constructor(private readonly settingsService: SettingsService) {}
+
   async run(tenantId: string, tenantSlug: string, prompt: string): Promise<AgentRunResult> {
+    const apiKey = await this.settingsService.getDecryptedApiKey(tenantId);
     return runAgent({
       tenantId,
       tenantSlug,
       prompt,
       repoRoot: REPO_ROOT,
       tenantsDir: TENANTS_DIR,
+      apiKey: apiKey ?? undefined,
     });
   }
 }

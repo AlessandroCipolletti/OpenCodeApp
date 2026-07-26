@@ -28,11 +28,20 @@ export function AssistantWidget({ tenant }: AssistantWidgetProps) {
         body: JSON.stringify({ prompt }),
       });
       const data = await res.json();
-      if (data.success) {
-        setStatus(`✅ Done! Release v${data.releaseVersion ?? '?'} created.`);
+      if (!res.ok) {
+        setStatus(`❌ ${data.message ?? data.error ?? 'Agent request failed'}`);
+        return;
+      }
+      if (data.success && data.releaseVersion != null) {
+        setStatus(`✅ ${data.message ?? 'Done'} — release v${data.releaseVersion} created.`);
+        setPrompt('');
+        // Reload so nav/content pick up extension changes
+        window.setTimeout(() => window.location.reload(), 600);
+      } else if (data.success) {
+        setStatus(`✅ ${data.message ?? 'Done'}`);
         setPrompt('');
       } else {
-        setStatus(`❌ ${data.message}`);
+        setStatus(`❌ ${data.message ?? 'No changes were applied'}`);
       }
     } catch (err) {
       setStatus('❌ Failed to connect to API');
